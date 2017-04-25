@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+	<!-- Adds all assets in Odoo -->
+        <template id="assets_backend" name="static_resources_wason assets" inherit_id="web.assets_backend">
+            <xpath expr="." position="inside">
+		         <!-- All links to CSS and JS files should be added in here. -->
+				  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+				  <script type="text/javascript" src="https://cdn.jsdelivr.net/jquery.suggestions/17.2/js/jquery.suggestions.min.js"></script>
+				  <script type="text/javascript" src="/deposit_subject_wason/static/src/js/dadata.js"></script>
+            </xpath>
+        </template>
+    </data>
+</odoo>

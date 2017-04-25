@@ -36,7 +36,7 @@
             <field name="contact_name"/>
             <field name="crm_lead_id" attrs="{'readonly':'true', 'invisible':'true'}"/>
             <field name="deposit_type" attrs="{'required':'true'}"/>
-            <field name="share"/>
+            <field name="share" attrs="{'required':'true'}"/>
             <field name="square_meters" attrs="{'invisible':[('deposit_type', 'not in', (1, 2, 3, 6))]}"/>
             <field name="number_rooms" attrs="{'invisible':[('deposit_type', '!=', 1)]}"/>
             <field name="square_acrs" attrs="{'invisible':[('deposit_type', 'not in', (3, 5))]}"/>
@@ -52,7 +52,8 @@
             <field name="in_marriage" attrs="{'required':'true'}"/>
             <field name="spose_agree" attrs="{'invisible':[('in_marriage', 'not in', (1))]}"/>
             <field name="marriage_contract" attrs="{'invisible':[('in_marriage', 'not in', (1))]}"/>
-            <field name="required_loan_amount"/>
+            <field name="reason_of_ownership"/>
+            <field name="required_loan_amount" attrs="{'required':'true'}"/>
 
             <field name="deposit_ownership_date"/>
           </group>
