@@ -21,7 +21,8 @@
         <form>
           <group>
 
-              <p>Здравствуйте, <field name="contact_name" attrs="{'readonly':'true'}"/>, меня зовут Юлия.</p>
+              <p>Здравствуйте, <field name="contact_name" attrs="{'readonly':'true'}"/>, меня зовут Юлия.</p><span t-esc="user.name"></span>
+              <span t-esc="request.env.user.name"/>
           </group>
             <p>
 Я звоню по Вашей заявке на займ под залог. Мы можем предложить Вам займ по ставке ОТ ДВУХ ПРОЦЕНТОВ (!) в месяц. Деньги мы готовы выдать СРАЗУ после рассмотрения документов на объект.
@@ -29,7 +30,7 @@
             
             <!--h1><field name="message"/></h1-->
            <!--  <h1 attrs="{'invisible':[  ('mydomain', '=', False)]}">Внимание! На самом деле человек хочет заложить только долю! Исправьте ниже ответ на вопрос: "Закладывается доля"</h1> and ( and ('how_many_owners'!=2)   other_owners_agree'-->
-           <h1 attrs="{'invisible': ['|','|',('share','!=',0),('how_many_owners','!=',2),('other_owners_agree','!=',2)]}">Внимание! На самом деле человек хочет заложить только долю! Исправьте ниже ответ на вопрос: "Объект закладываете целиком или долю"</h1>
+           <h1 attrs="{'invisible': ['|','|',('share','!=',1),('how_many_owners','!=',2),('other_owners_agree','!=',2)]}">Внимание! На самом деле человек хочет заложить только долю! Исправьте ниже ответ на вопрос: "Объект закладываете целиком или долю"</h1>
 
          <group>
 
@@ -44,15 +45,18 @@
             <field name="land_status" attrs="{'invisible':[('deposit_type', 'not in', (3, 5))]}"/>
             <field name="current_contact_to_owner" attrs="{'required':'true'}"/>
             <field name="consanguinity" attrs="{'required':[('current_contact_to_owner', '==', 2)], 'invisible':[('current_contact_to_owner', '!=', 2)]}"/>
-            <field name="how_many_owners" attrs="{'required':[('current_contact_to_owner', '==', 2)]}"/>
+            <field name="how_many_owners" attrs="{'required':[('current_contact_to_owner', '==', 1)]}"/>
             <field name="other_owners_agree" attrs="{'required':[('how_many_owners', '==', 2) , ('current_contact_to_owner', '==', 1)], 'invisible':[('how_many_owners', '!=', 2)]}"/>
             <field name="minors_owners" attrs="{'invisible':[('how_many_owners', '!=', 2)]}" />
             <field name="deposit_object_address" attrs="{'required':'true'}"/>
-            <field name="arested" attrs="{'required':'true'}"/>
-            <field name="in_marriage" attrs="{'required':'true'}"/>
+            <field name="arested"/>
+            <field name="in_marriage" attrs="{'required':[('current_contact_to_owner', '==', 1)]}"/>
             <field name="spose_agree" attrs="{'invisible':[('in_marriage', 'not in', (1))]}"/>
             <field name="marriage_contract" attrs="{'invisible':[('in_marriage', 'not in', (1))]}"/>
             <field name="reason_of_ownership"/>
+            <field name="how_many_regestered" attrs="{'invisible':[('deposit_type', 'not in', (1, 2, 3))]}"/>
+            <field name="minors_regestered" attrs="{'invisible':['|',('how_many_regestered', '==', 0) , ('how_many_regestered', '==', -1)]}"/>
+
             <field name="required_loan_amount" attrs="{'required':'true'}"/>
 
             <field name="deposit_ownership_date"/>
@@ -68,6 +72,16 @@
           <group>
           <field name="deliver_documents"/>
           </group>
+          <group>
+            <field name="electricity_power" attrs="{'invisible':[('deposit_type', 'not in', (3, 5, 6))]}"/>
+            <field name="gas_available" attrs="{'invisible':[('deposit_type', 'not in', (3, 5))]}"/>
+            <field name="water_supply" attrs="{'invisible':[('deposit_type', '!=', 3)]}"/>
+            <field name="sewerage" attrs="{'invisible':[('deposit_type', '!=', 3)]}"/>
+            <field name="heating" attrs="{'invisible':[('deposit_type', '!=', 3)]}"/>
+            <field name="house_materials" attrs="{'invisible':[('deposit_type', '!=', 3)]}"/>
+            <field name="basement_materials" attrs="{'invisible':[('deposit_type', '!=', 3)]}"/>
+          </group>
+
           <div class="oe_chatter">
                  <field name="message_follower_ids" widget="mail_followers" groups="base.group_user"/>
                  <field name="message_ids" widget="mail_thread"/>

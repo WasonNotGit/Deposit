@@ -51,15 +51,15 @@ class LandStatus():
 
 
 class CurrentContactRelationToOwner():
-    owner1 = 1
-    relative1 = 2
+    owner = 1
+    relative = 2
     representative = 3
     broker = 4
     middleman = 5
 
     values = {
-        owner1: u'Собственник',
-        relative1: u'Родственник собственника',
+        owner: u'Собственник',
+        relative: u'Родственник собственника',
         representative: u'Представитель собственника',
         broker: u'Брокер',
         middleman: u'Посредник',
@@ -86,13 +86,29 @@ class NullableBoolean():
 
 class ReasonOfOwnership():
     purchase = 1
-    legacy = 2
-    courth_decision = 3
+    privatization = 2
+    legacy = 3
+    share_participating = 4
+    gift = 5
+    change = 6
+    building = 7
+    declaration = 8
+    courth_decision = 9
+    auction = 10
+    other = 100
 
     values = {
-        purchase: u'Купля-продажа',
+        purchase: u'договор купли-продажи',
+        privatization: u'приватизация',
         legacy: u'Наследство',
+        share_participating: u'договор долевого участия',
+        gift: u'договор дарения',
+        change: u'договор мены',
+        building: u'договор строительного подряда',
+        declaration: u'декларация на дом',
         courth_decision: u'Решение суда',
+        auction: u'реализация с торгов',
+        other: u'прочее',
     }
 
     @classmethod
@@ -106,6 +122,25 @@ class OneOrMany():
     values = {
         one: u'Один',
         many: u'Два или более',
+    }
+
+    @classmethod
+    def get_values(cls):
+        return [(x, cls.values[x]) for x in cls.values]
+
+class WaterSupply():
+    not_avail = 0
+    chink = 1
+    well = 2
+    central = 3
+    other = 10
+
+    values = {
+        not_avail: u'отсутствует',
+        chink: u'скважина',
+        well: u'Колодец',
+        central: u'Центральное',
+        other: u'Другое',
     }
 
     @classmethod
@@ -134,7 +169,7 @@ class deposit_subject(models.Model):
     # Поля займа
 
     deposit_type = fields.Selection(DepositType.get_values(), string=u'Что у Вас за объект?', index=True, default=None, track_visibility='onchange')
-    share = fields.Selection ([(0,"Целиком"),(1,"Доля")], string=u'Объект закладываете целиком или долю', default=None, track_visibility='onchange')
+    share = fields.Selection ([(1,"Целиком"),(2,"Доля")], string=u'Объект закладываете целиком или долю', default=None, track_visibility='onchange')
     number_rooms = fields.Integer(string=u"Сколько комнат", track_visibility='onchange')
     square_meters = fields.Integer(string=u"Сколько квадратных метров?", track_visibility='onchange')
     square_acrs = fields.Integer(string=u"Сколько соток участок?", track_visibility='onchange')
@@ -150,21 +185,29 @@ class deposit_subject(models.Model):
     in_marriage = fields.Selection (NullableBoolean.get_values(), string=u'Объект приобретался в браке?', default=None, track_visibility='onchange')
     spose_agree = fields.Selection (NullableBoolean.get_values(), string=u'Будет ли нотариальное согласие супруга(и) на сделку?', required=False, default=None, track_visibility='onchange')
     marriage_contract = fields.Selection (NullableBoolean.get_values(), string=u'Имеется ли брачный договор?', required=False, default=None, track_visibility='onchange')
-    reason_of_ownership = fields.Selection (ReasonOfOwnership.get_values(), string=u'Укажите, основание для возникновения собственности: ', required=False, default=None, track_visibility='onchange')
+    reason_of_ownership = fields.Selection (ReasonOfOwnership.get_values(), string=u'Укажите, основание собственности: ', required=False, default=None, track_visibility='onchange')
     # Согласие супруги не требуется, т.к. объект приобретался по Договору дарения, приватизации или в наследство.
-    how_many_regestered = fields.Integer(string=u"Сколько человек зарегистрировано на объекте", track_visibility='onchange')
+    how_many_regestered = fields.Integer(string=u"Сколько человек зарегистрировано на объекте", default=-1, track_visibility='onchange')
     minors_regestered = fields.Selection (NullableBoolean.get_values(), string=u'Есть ли среди зарегистрированных несовершеннолетние?', default=None, track_visibility='onchange')
     deposit_ownership_date = fields.Date(string=u'Дата возникновения права собственности', track_visibility='onchange')
     required_loan_amount = fields.Integer(string=u"Какая сумма Вам нужна?", track_visibility='onchange')
     loan_deadline = fields.Date(string=u"Примерно к какой дате Вам нужны деньги?", track_visibility='onchange')
     email_documents = fields.Selection (NullableBoolean.get_values(), string=u'Смогу отправить по электронной почте', required=False, default=None)
     deliver_documents = fields.Selection (NullableBoolean.get_values(), string=u'Смогу приехать в офис с документами', required=False, default=None)
+    electricity_power = fields.Integer(string=u"Сколько КВт электричества?", default=-1, track_visibility='onchange')
+    gas_available = fields.Selection (NullableBoolean.get_values(), string=u'Есть ли газ?', default=None, track_visibility='onchange')
+    water_supply = fields.Selection(WaterSupply.get_values(), string=u'Водоснабжение: ', default=None, track_visibility='onchange')
+    sewerage = fields.Selection([(0,"Отсутствует"),(1,"Септик"),(2,"Центральная"),(10,"Прочее")], string=u'Канализация: ', default=None, track_visibility='onchange')
+    heating = fields.Selection([(0,"Отсутствует"),(1,"Центральное"),(10,"Прочее")], string=u'Отопление: ', default=None, track_visibility='onchange')
+    house_materials = fields.Selection([(0,"Дерево"),(1,"Брус"),(2,"Газобетон"),(3,"Кирпич"),(4,"Каркасный (в том числе СИП-панели)"),(10,"Прочее")], string=u'Из каких материалов построен дом: ', default=None, track_visibility='onchange')
+    basement_materials = fields.Selection([(0,"Бетонный"),(1,"Свайный"),(10,"Прочее")], string=u'Какой фундамент: ', default=None, track_visibility='onchange')
+
     message = fields.Text(string="Message", compute="write_message")
 
     @api.onchange('share', 'other_owners_agree', 'how_many_owners')
     @api.multi
     def write_message(self):
-        if self.share==1 : # and self.other_owners_agree==2 and self.how_many_owners==2
+        if self.share==2 : # and self.other_owners_agree==2 and self.how_many_owners==2
             self.message=u'Внимание! На самом деле человек хочет заложить только долю! Исправьте ниже ответ на вопрос: Закладывается доля'
         else:
             self.message=u' '
@@ -176,6 +219,14 @@ class deposit_subject(models.Model):
     #     if self.share==0 or self.other_owners_agree==2 or self.how_many_owners==2:
     #         return True
     #     return False
+    # @api.onchange('share', 'deposit_type')
+    # @api.multi
+    # def write_message(self):
+    #     self.stage_id=crm.stage_id
+    #     if self.share==1 : # and self.other_owners_agree==2 and self.how_many_owners==2
+    #         self.message=u'Внимание! На самом деле человек хочет заложить только долю! Исправьте ниже ответ на вопрос: Закладывается доля'
+    #     else:
+    #         self.message=u' '
 
     @api.one
     def do_send_email(self):
@@ -209,4 +260,5 @@ class wason_lead(models.Model):
         #new_lead = self.env['crm.lead'].search(['id','=',res.id])
         new_lead = self.env['crm.lead'].browse(res.id)
         new_lead.id_deposit = deposit_id
+        #new_lead.stage_id = 10
         return res

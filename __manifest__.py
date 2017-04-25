@@ -28,6 +28,7 @@
         'views/views.xml',
         'views/templates.xml',
         # 'views/resources.xml',
+        'data/crm_stage_data.xml'
     ],
     # only loaded in demonstration mode
     'demo': [
