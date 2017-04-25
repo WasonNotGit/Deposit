@@ -1,0 +1,127 @@
+<odoo>
+
+      <record model="ir.actions.server" id="open_deposit_subject_page">
+      <field name="name">open_deposit_subject_page server</field>
+      <field name="model_id" ref="crm.model_crm_lead"/>
+      <field name="code">
+        action = {
+          "type": "ir.actions.act_window",
+          "view_mode": "form",
+          "res_model": 'deposit_subject_wason',
+          "target": "current",
+          "context": context,
+        }
+      </field>
+    </record>
+
+  <record model="ir.ui.view" id="deposit_subject_wason_form">
+      <field name="name">deposit_subject_wason form</field>
+      <field name="model">deposit_subject_wason</field>
+      <field name="arch" type="xml">
+        <form>
+          <group>
+
+              <p>Здравствуйте, <field name="contact_name" attrs="{'readonly':'true'}"/>, меня зовут Юлия.</p>
+          </group>
+            <p>
+Я звоню по Вашей заявке на займ под залог. Мы можем предложить Вам займ по ставке ОТ ДВУХ ПРОЦЕНТОВ (!) в месяц. Деньги мы готовы выдать СРАЗУ после рассмотрения документов на объект.
+Если Ваша заявка еще актуальна, я бы хотела узнать про объект, который Вы предлагаете в залог.</p>
+            
+            <!--h1><field name="message"/></h1-->
+           <!--  <h1 attrs="{'invisible':[  ('mydomain', '=', False)]}">Внимание! На самом деле человек хочет заложить только долю! Исправьте ниже ответ на вопрос: "Закладывается доля"</h1> and ( and ('how_many_owners'!=2)   other_owners_agree'-->
+           <h1 attrs="{'invisible': ['|','|',('share','!=',0),('how_many_owners','!=',2),('other_owners_agree','!=',2)]}">Внимание! На самом деле человек хочет заложить только долю! Исправьте ниже ответ на вопрос: "Объект закладываете целиком или долю"</h1>
+
+         <group>
+
+            <field name="contact_name"/>
+            <field name="crm_lead_id" attrs="{'readonly':'true', 'invisible':'true'}"/>
+            <field name="deposit_type" attrs="{'required':'true'}"/>
+            <field name="share"/>
+            <field name="square_meters" attrs="{'invisible':[('deposit_type', 'not in', (1, 2, 3, 6))]}"/>
+            <field name="number_rooms" attrs="{'invisible':[('deposit_type', '!=', 1)]}"/>
+            <field name="square_acrs" attrs="{'invisible':[('deposit_type', 'not in', (3, 5))]}"/>
+            <field name="floor" attrs="{'invisible':[('deposit_type', 'not in', (1, 2, 6))]}"/>
+            <field name="land_status" attrs="{'invisible':[('deposit_type', 'not in', (3, 5))]}"/>
+            <field name="current_contact_to_owner" attrs="{'required':'true'}"/>
+            <field name="consanguinity" attrs="{'required':[('current_contact_to_owner', '==', 2)], 'invisible':[('current_contact_to_owner', '!=', 2)]}"/>
+            <field name="how_many_owners" attrs="{'required':[('current_contact_to_owner', '==', 2)]}"/>
+            <field name="other_owners_agree" attrs="{'required':[('how_many_owners', '==', 2) , ('current_contact_to_owner', '==', 1)], 'invisible':[('how_many_owners', '!=', 2)]}"/>
+            <field name="minors_owners" attrs="{'invisible':[('how_many_owners', '!=', 2)]}" />
+            <field name="deposit_object_address" attrs="{'required':'true'}"/>
+            <field name="arested" attrs="{'required':'true'}"/>
+            <field name="in_marriage" attrs="{'required':'true'}"/>
+            <field name="spose_agree" attrs="{'invisible':[('in_marriage', 'not in', (1))]}"/>
+            <field name="marriage_contract" attrs="{'invisible':[('in_marriage', 'not in', (1))]}"/>
+            <field name="required_loan_amount"/>
+
+            <field name="deposit_ownership_date"/>
+          </group>
+            <p>Для подготовки кредитного предложения, мне необходимо получить от Вас документы.</p>
+            <p>Как Вы сможете предоставить документы на объект?</p>
+          <group name="Docs_sending">
+            <field name="email_documents"/>
+            <field name="lead_email" attrs="{'invisible':[('email_documents', '!=', 1)]}" widget="email"/>
+            <!--button name="do_send_email" type="object" string="Отправить email" class="oe_highlight" attrs="{'invisible':[('email_documents', '!=', 1)]}" /-->
+            
+          </group>
+          <group>
+          <field name="deliver_documents"/>
+          </group>
+          <div class="oe_chatter">
+                 <field name="message_follower_ids" widget="mail_followers" groups="base.group_user"/>
+                 <field name="message_ids" widget="mail_thread"/>
+          </div>
+        </form>
+      </field>
+    </record>
+
+    <record model="ir.ui.view" id="crm_case_form_view_oppor">
+      <field name="name">crm_lead_wason form</field>
+      <field name="model">crm.lead</field>
+      <field name="inherit_id" ref="crm.crm_case_form_view_oppor"/>
+      <field name="arch" type="xml">
+        <xpath expr="//button[@name='action_set_won']" position="before">
+          <field name="id" invsible="1"/>
+            <button name="%(open_deposit_subject_page)d" string="Начать разговор" type="action" class="oe_highlight"
+            context="{'default_crm_lead_id': active_id}"/>
+
+        </xpath>
+
+        <xpath expr="//field[@name='phone']" position="after">
+           
+            <field name="id_deposit"/>
+        </xpath>
+
+      </field>
+    </record>
+
+
+    <record id="action_open_deposits" model="ir.actions.act_window">
+            <field name="name">Deposits</field>
+            <field name="res_model">deposit_subject_wason</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_type">form</field>
+    </record>
+
+    <menuitem
+        id="menu_deposits_root"
+        name="Залоги"
+        sequence="1"
+        groups="sales_team.group_sale_manager,sales_team.group_sale_salesman"
+    />
+
+    <menuitem id="menu_deposits_actions_top"
+              name="Actions"
+              parent="menu_deposits_root"
+              sequence="10"/>
+
+    <menuitem id="menu_deposits_actions"
+              name="Deposits"
+              parent="menu_deposits_actions_top"
+              action="action_open_deposits"
+              sequence="10"/>
+
+
+
+
+</odoo>
