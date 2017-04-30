@@ -28,7 +28,7 @@
 Я звоню по Вашей заявке на займ под залог. Мы можем предложить Вам займ по ставке ОТ ДВУХ ПРОЦЕНТОВ (!) в месяц. Деньги мы готовы выдать СРАЗУ после рассмотрения документов на объект.
 Если Ваша заявка еще актуальна, я бы хотела узнать про объект, который Вы предлагаете в залог.</p>
             
-            <!--h1><field name="message"/></h1-->
+            <h3><field name="message"/></h3>
            <!--  <h1 attrs="{'invisible':[  ('mydomain', '=', False)]}">Внимание! На самом деле человек хочет заложить только долю! Исправьте ниже ответ на вопрос: "Закладывается доля"</h1> and ( and ('how_many_owners'!=2)   other_owners_agree'-->
            <h1 attrs="{'invisible': ['|','|',('share','!=',1),('how_many_owners','!=',2),('other_owners_agree','!=',2)]}">Внимание! На самом деле человек хочет заложить только долю! Исправьте ниже ответ на вопрос: "Объект закладываете целиком или долю"</h1>
 
@@ -58,6 +58,7 @@
             <field name="minors_regestered" attrs="{'invisible':['|',('how_many_regestered', '==', 0) , ('how_many_regestered', '==', -1)]}"/>
 
             <field name="required_loan_amount" attrs="{'required':'true'}"/>
+            <field name="loan_deadline" attrs="{'required':'false'}"/>
 
             <field name="deposit_ownership_date"/>
           </group>

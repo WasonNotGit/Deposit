@@ -1,7 +1,14 @@
 # -*- coding: utf-8 -*-
 
 from odoo import models, fields, api
+import datetime
+from datetime import date, timedelta
+from dateutil.relativedelta import relativedelta
+#from procal import ProdCal
 
+
+import logging
+_logger = logging.getLogger (__name__)
 
 class DepositType():
     flat = 1
@@ -148,6 +155,32 @@ class WaterSupply():
         return [(x, cls.values[x]) for x in cls.values]
 
 
+def is_working_day (checking_date):
+    #if checking_date.
+    oficial_holidays = { date (2017, 5, 1), date (2017, 5, 8), date (2017, 5, 9), date (2017, 6, 12), date (2017, 11, 6), date (2018, 1, 1),
+        date (2018, 1, 2), date (2018, 1, 3), date (2018, 1, 4), date (2018, 1, 5), date (2018, 1, 8), date (2018, 1, 9),
+        date (2018, 2, 23), date (2018, 3, 8), date (2018, 5, 1), date (2018, 5, 9), date (2018, 11, 5)
+     }
+    _logger.debug (u'checking_date {}, type: {}'.format(checking_date , type(checking_date)) )
+    if (checking_date in oficial_holidays):
+        return False
+    isoweekday = checking_date.weekday()
+    _logger.debug (u'checking_date.isoweekday() {}'.format(checking_date.isoweekday() ))
+    return checking_date.isoweekday()<6
+
+def closest_working_day (starting_date, step):
+    #prod_cal = ProdCal()
+    _logger.debug (u'starting_date {} step {}'.format(starting_date, step))
+    final_date=starting_date
+    while not is_working_day(final_date):
+        final_date += timedelta(days=step) 
+    return final_date
+
+def last_day_of_month(date):
+    if date.month == 12:
+        return date.replace(day=31)
+    return date.replace(month=date.month+1, day=1) - datetime.timedelta(days=1)
+
 class deposit_subject(models.Model):
     _name = 'deposit_subject_wason'
   #  _order = "crm_lead, floor, "
@@ -175,7 +208,7 @@ class deposit_subject(models.Model):
     square_acrs = fields.Integer(string=u"Сколько соток участок?", track_visibility='onchange')
     floor = fields.Integer(string=u"Этаж", track_visibility='onchange')
     land_status = fields.Selection(LandStatus.get_values(), string=u'По целевому назначению участка это земли: ', default=None, track_visibility='onchange')
-    deposit_object_address = fields.Char (string=u'Адрес объекта', default=None, track_visibility='onchange')
+    deposit_object_address = fields.Char (string=u'Адрес объекта', track_visibility='onchange')
     current_contact_to_owner = fields.Selection(CurrentContactRelationToOwner.get_values(), string=u'Вы являетесь собственником объекта?', index=False, default=None, track_visibility='onchange')
     consanguinity = fields.Char (string=u'Укажите родство', default=None, track_visibility='onchange')
     how_many_owners = fields.Selection(OneOrMany.get_values(), string=u'Сколько собственников у объекта: ', default=None, track_visibility='onchange')
@@ -194,7 +227,7 @@ class deposit_subject(models.Model):
     loan_deadline = fields.Date(string=u"Примерно к какой дате Вам нужны деньги?", track_visibility='onchange')
     email_documents = fields.Selection (NullableBoolean.get_values(), string=u'Смогу отправить по электронной почте', required=False, default=None)
     deliver_documents = fields.Selection (NullableBoolean.get_values(), string=u'Смогу приехать в офис с документами', required=False, default=None)
-    electricity_power = fields.Integer(string=u"Сколько КВт электричества?", default=-1, track_visibility='onchange')
+    electricity_power = fields.Float(string=u"Сколько КВт электричества?", default=-1, track_visibility='onchange')
     gas_available = fields.Selection (NullableBoolean.get_values(), string=u'Есть ли газ?', default=None, track_visibility='onchange')
     water_supply = fields.Selection(WaterSupply.get_values(), string=u'Водоснабжение: ', default=None, track_visibility='onchange')
     sewerage = fields.Selection([(0,"Отсутствует"),(1,"Септик"),(2,"Центральная"),(10,"Прочее")], string=u'Канализация: ', default=None, track_visibility='onchange')
@@ -204,11 +237,26 @@ class deposit_subject(models.Model):
 
     message = fields.Text(string="Message", compute="write_message")
 
-    @api.onchange('share', 'other_owners_agree', 'how_many_owners')
+
+    @api.onchange('required_loan_amount', 'loan_deadline', 'electricity_power')
     @api.multi
     def write_message(self):
-        if self.share==2 : # and self.other_owners_agree==2 and self.how_many_owners==2
-            self.message=u'Внимание! На самом деле человек хочет заложить только долю! Исправьте ниже ответ на вопрос: Закладывается доля'
+        if self.electricity_power>0 :
+            total_amount = 0
+            month_payment=self.required_loan_amount * self.electricity_power /100
+            start_loan_date = datetime.datetime.strptime(self.loan_deadline, '%Y-%m-%d').date()
+            first_payment_date = closest_working_day(start_loan_date + timedelta (days=1),1) 
+            #_logger.debug (u'Уплата первой доли займа в сумме {} должна быть произведена не позднее {} (тип: {})'.format(month_payment,start_loan_date, type (start_loan_date)) )
+            self.message=u'Уплата первой доли займа в сумме {1} должна быть произведена не позднее {0:%d.%m.%Y}.'.format(first_payment_date, month_payment)
+            total_amount += month_payment
+            for i in xrange(1,12):
+                next_payment_date = closest_working_day(last_day_of_month (start_loan_date + relativedelta (months=i)),-1)
+                self.message += u'Не позднее {:%d.%m.%Y} в сумме {}.'.format(next_payment_date, month_payment)
+                total_amount += month_payment
+            last_payment_date = closest_working_day(start_loan_date + relativedelta (months=12),1)
+            self.message += u'Не позднее {:%d.%m.%Y} в сумме {}.'.format(last_payment_date, self.required_loan_amount)
+            total_amount += self.required_loan_amount
+            self.message = u'Займодавец предоставляет заёмщику денежную сумму в размере {}.'.format(total_amount) + self.message
         else:
             self.message=u' '
     # mydomain = fields.Boolean(string=u"Видимость", compute= 'it_is_share')
@@ -248,7 +296,8 @@ class wason_lead(models.Model):
         res = super(wason_lead, self).create(vals)
         deposit_id = self.env['deposit_subject_wason'].create({
                      'crm_lead_id': res.id,
-                    # 'id' : 537,
+                     'id' : 1529,
+                     'deposit_object_address' : 'adress 01',
                     # 'name': res.name,
                     # 'user_id': self._uid,  
                     # 'order_id': res.id,
