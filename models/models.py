@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from odoo import models, fields, api
+from odoo import models, fields, api, exceptions
 import datetime
 from datetime import date, timedelta
 from dateutil.relativedelta import relativedelta
@@ -186,8 +186,24 @@ class deposit_subject(models.Model):
   #  _order = "crm_lead, floor, "
     _inherit = ['mail.thread']
 
+    @api.constrains('square_meters')   
+    def _check_string(self):
+        for data in self:
+            if data.square_meters < 3:
+                 raise exceptions.ValidationError("Please enter the marks !")
+        return True
+
+    @api.onchange('square_meters')   
+    def _check_string1(self):
+        for data in self:
+            if data.square_meters < 3:
+                 raise exceptions.ValidationError("Onchange enter the marks !")
+        return True
+
+
     _sql_constraints = [
     ('crm_lead_id', 'unique("crm_lead_id")', 'Field crm_lead_id must be unique.'),
+
   ]
 
     # Основные поля
@@ -197,19 +213,21 @@ class deposit_subject(models.Model):
                                                  readonly=True)
     lead_email = fields.Char(related='crm_lead_id.email_from',readonly=False)
 
-    contact_name = fields.Char(related='crm_lead_id.contact_name', string=u'Как к Вам обращаться?',readonly=False)
-    #lambda self: self.env.context.get('default_crm_lead', False)
+    contact_name = fields.Char(related='crm_lead_id.contact_name', string=u'Подскажите, как Вас зовут?',readonly=False)
     # Поля займа
 
     deposit_type = fields.Selection(DepositType.get_values(), string=u'Что у Вас за объект?', index=True, default=None, track_visibility='onchange')
+    loan_period_selection = fields.Selection ([(1,"1 месяц"),(2,"2 месяца"),(3,"3 месяца"),(4,"4 месяца"),(5,"5 месяцев"),(6,"6 месяцев"),(10,"10 месяцев"),
+        (12,"1 год"),(18,"полтора года"),(24,"2 года"),(36,"3 года"),(48,"4 года"),(60,"5 лет"),(120,"10 лет"),(1000,"другой срок")], string=u'На какой срок Вы хотите взять займ?', default=None, track_visibility='onchange')
+    loan_period_months = fields.Integer(string=u"На какой срок Вы хотите взять займ? (в месяцах)", default=0, track_visibility='onchange')
     share = fields.Selection ([(1,"Целиком"),(2,"Доля")], string=u'Объект закладываете целиком или долю', default=None, track_visibility='onchange')
     number_rooms = fields.Integer(string=u"Сколько комнат", track_visibility='onchange')
-    square_meters = fields.Integer(string=u"Сколько квадратных метров?", track_visibility='onchange')
+    square_meters = fields.Integer(string=u"Метраж?", track_visibility='onchange')
     square_acrs = fields.Integer(string=u"Сколько соток участок?", track_visibility='onchange')
     floor = fields.Integer(string=u"Этаж", track_visibility='onchange')
     land_status = fields.Selection(LandStatus.get_values(), string=u'По целевому назначению участка это земли: ', default=None, track_visibility='onchange')
     deposit_object_address = fields.Char (string=u'Адрес объекта', track_visibility='onchange')
-    current_contact_to_owner = fields.Selection(CurrentContactRelationToOwner.get_values(), string=u'Вы являетесь собственником объекта?', index=False, default=None, track_visibility='onchange')
+    current_contact_to_owner = fields.Selection(CurrentContactRelationToOwner.get_values(), string=u'Вы собственник объекта?', index=False, default=None, track_visibility='onchange')
     consanguinity = fields.Char (string=u'Укажите родство', default=None, track_visibility='onchange')
     how_many_owners = fields.Selection(OneOrMany.get_values(), string=u'Сколько собственников у объекта: ', default=None, track_visibility='onchange')
     other_owners_agree = fields.Selection (NullableBoolean.get_values(), string=u'Все остальные собственники тоже будут закладывать?', default=None, track_visibility='onchange')
@@ -224,7 +242,7 @@ class deposit_subject(models.Model):
     minors_regestered = fields.Selection (NullableBoolean.get_values(), string=u'Есть ли среди зарегистрированных несовершеннолетние?', default=None, track_visibility='onchange')
     deposit_ownership_date = fields.Date(string=u'Дата возникновения права собственности', track_visibility='onchange')
     required_loan_amount = fields.Integer(string=u"Какая сумма Вам нужна?", track_visibility='onchange')
-    loan_deadline = fields.Date(string=u"Примерно к какой дате Вам нужны деньги?", track_visibility='onchange')
+    loan_deadline = fields.Date(string=u"Не позднее какой даты Вам нужны деньги?", track_visibility='onchange')
     email_documents = fields.Selection (NullableBoolean.get_values(), string=u'Смогу отправить по электронной почте', required=False, default=None)
     deliver_documents = fields.Selection (NullableBoolean.get_values(), string=u'Смогу приехать в офис с документами', required=False, default=None)
     electricity_power = fields.Float(string=u"Сколько КВт электричества?", default=-1, track_visibility='onchange')
@@ -238,7 +256,17 @@ class deposit_subject(models.Model):
     message = fields.Text(string="Message", compute="write_message")
 
 
-    @api.onchange('required_loan_amount', 'loan_deadline', 'electricity_power')
+    @api.onchange('loan_period_selection')
+    @api.multi
+    def change_loan_period(self):
+        _logger.debug (u'self.loan_period_months {} имеет тип: {})'.format(self.loan_period_months, type (self.loan_period_months)) )
+        if self.loan_period_selection==1000 :
+            self.loan_period_months = 0
+        else:
+            self.loan_period_months = self.loan_period_selection
+        #return True
+
+    @api.onchange('required_loan_amount', 'loan_deadline', 'electricity_power', 'loan_period_months')
     @api.multi
     def write_message(self):
         if self.electricity_power>0 :
@@ -249,14 +277,16 @@ class deposit_subject(models.Model):
             #_logger.debug (u'Уплата первой доли займа в сумме {} должна быть произведена не позднее {} (тип: {})'.format(month_payment,start_loan_date, type (start_loan_date)) )
             self.message=u'Уплата первой доли займа в сумме {1} должна быть произведена не позднее {0:%d.%m.%Y}.'.format(first_payment_date, month_payment)
             total_amount += month_payment
-            for i in xrange(1,12):
+            for i in xrange(1,self.loan_period_months):
                 next_payment_date = closest_working_day(last_day_of_month (start_loan_date + relativedelta (months=i)),-1)
-                self.message += u'Не позднее {:%d.%m.%Y} в сумме {}.'.format(next_payment_date, month_payment)
+                self.message += u' Не позднее {:%d.%m.%Y} в сумме {}.'.format(next_payment_date, month_payment)
                 total_amount += month_payment
-            last_payment_date = closest_working_day(start_loan_date + relativedelta (months=12),1)
-            self.message += u'Не позднее {:%d.%m.%Y} в сумме {}.'.format(last_payment_date, self.required_loan_amount)
+            last_payment_date = closest_working_day(start_loan_date + relativedelta (months=self.loan_period_months),1)
+            self.message += u' Не позднее {:%d.%m.%Y} в сумме {}.'.format(last_payment_date, self.required_loan_amount)
             total_amount += self.required_loan_amount
-            self.message = u'Займодавец предоставляет заёмщику денежную сумму в размере {}.'.format(total_amount) + self.message
+            self.message = u'Займодавец предоставляет заёмщику денежную сумму в размере {}. '.format(total_amount) + self.message
+            self.message += u' Таким образом, суммарно за {} месяцев получается {}'.format (self.loan_period_months, 
+                (total_amount-self.required_loan_amount))
         else:
             self.message=u' '
     # mydomain = fields.Boolean(string=u"Видимость", compute= 'it_is_share')

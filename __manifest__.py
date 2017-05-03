@@ -10,7 +10,9 @@
         Long description of module's purpose
     """,
 
-    'author': "My Company",
+    "application": True,
+
+    'author': "Wason",
     'website': "http://www.yourcompany.com",
 
     # Categories can be used to filter modules in modules listing
@@ -24,10 +26,11 @@
 
     # always loaded
     'data': [
-        # 'security/ir.model.access.csv',
+        'security/deposit_access_rules.xml',
+        'security/ir.model.access.csv',
         'views/views.xml',
         'views/templates.xml',
-        # 'views/resources.xml',
+        #'views/resources.xml',
         'data/crm_stage_data.xml'
     ],
     # only loaded in demonstration mode
