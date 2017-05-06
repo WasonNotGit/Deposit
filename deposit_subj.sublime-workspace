@@ -11,24 +11,6 @@
 	},
 	"buffers":
 	[
-		{
-			"file": "models/models.py",
-			"settings":
-			{
-				"buffer_size": 7159,
-				"encoding": "UTF-8",
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "views/views.xml",
-			"settings":
-			{
-				"buffer_size": 5443,
-				"encoding": "UTF-8",
-				"line_ending": "Unix"
-			}
-		}
 	],
 	"build_system": "",
 	"build_system_choices":
@@ -62,12 +44,12 @@
 	},
 	"expanded_folders":
 	[
-		"/opt/odoo/custom-addons/deposit_subject_wason",
-		"/opt/odoo/custom-addons/deposit_subject_wason/models",
-		"/opt/odoo/custom-addons/deposit_subject_wason/views"
+		"/opt/odoo/custom-addons/deposit subject wason"
 	],
 	"file_history":
 	[
+		"/opt/odoo/custom-addons/deposit subject wason/models/models.py",
+		"/opt/odoo/custom-addons/deposit subject wason/views/views.xml"
 	],
 	"find":
 	{
@@ -102,69 +84,8 @@
 	"groups":
 	[
 		{
-			"selected": 1,
 			"sheets":
 			[
-				{
-					"buffer": 0,
-					"file": "models/models.py",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 7159,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								6884,
-								6884
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 2235.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 1,
-					"type": "text"
-				},
-				{
-					"buffer": 1,
-					"file": "views/views.xml",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 5443,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								3685,
-								3685
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/XML/XML.sublime-syntax",
-							"tab_size": 2,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 630.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 0,
-					"type": "text"
-				}
 			]
 		}
 	],
