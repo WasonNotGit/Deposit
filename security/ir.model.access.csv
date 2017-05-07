@@ -1,3 +1,5 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_deposit_subject_wason_group_user,deposit_subject_wason,model_deposit_subject_wason,group_deposit_user,1,1,1,1
-access_crm_lead,crm.lead,model_crm_lead,group_deposit_user,1,1,1,0
+access_crm_lead_for_deposit_user,crm.lead,model_crm_lead,group_deposit_user,1,1,1,0
+access_deposit_subject_wason_group_manager,deposit_subject_wason,model_deposit_subject_wason,group_deposit_manager,1,1,1,1
+access_crm_lead_for_deposit_manager,crm.lead,model_crm_lead,group_deposit_manager,1,1,1,0

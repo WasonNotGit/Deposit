@@ -142,17 +142,19 @@
         id="menu_deposits_root"
         name="Залоги"
         sequence="1"
-        groups="group_deposit_user"
+        groups="group_deposit_user,group_deposit_manager"
     />
 
     <menuitem id="menu_deposits_actions_top"
               name="Actions"
               parent="menu_deposits_root"
+              groups="group_deposit_user,group_deposit_manager"
               sequence="10"/>
 
     <menuitem id="menu_deposits_resns_top"
-              name="Restrs"
+              name="Управление"
               parent="menu_deposits_root"
+              groups="group_deposit_manager"
               sequence="100"/>
 
     <menuitem id="menu_deposits_actions"
@@ -162,7 +164,7 @@
               sequence="10"/>
 
     <menuitem id="menu_deposits_actions-form"
-              name="Deposits2"
+              name="Импорт из файла"
               parent="menu_deposits_resns_top"
               action="action_open_deposits-form"
               sequence="100"/>

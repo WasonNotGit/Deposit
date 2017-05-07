@@ -3,8 +3,7 @@
     'name': "deposit_subject_wason",
 
     'summary': """
-        Short (1 phrase/line) summary of the module's purpose, used as
-        subtitle on modules listing or apps.openerp.com""",
+        Управляйте сбором сведений о залогах (объектах недвижимости, транспорта и так далее)""",
 
     'description': """
         Long description of module's purpose
