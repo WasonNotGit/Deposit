@@ -214,6 +214,7 @@ class deposit_subject(models.Model):
     lead_email = fields.Char(related='crm_lead_id.email_from',readonly=False)
 
     contact_name = fields.Char(related='crm_lead_id.contact_name', string=u'Подскажите, как Вас зовут?',readonly=False)
+    lead_phone = fields.Char(related='crm_lead_id.phone', readonly=False)
     # Поля займа
 
     deposit_type = fields.Selection(DepositType.get_values(), string=u'Что у Вас за объект?', index=True, default=None, track_visibility='onchange')

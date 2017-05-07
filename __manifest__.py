@@ -6,7 +6,9 @@
         Управляйте сбором сведений о залогах (объектах недвижимости, транспорта и так далее)""",
 
     'description': """
-        Long description of module's purpose
+        Установите группу Залоги / Сотрудник тому сотруднику, в чьи обязанности входит обзвон заемщиков,
+        получение от них документов и внесение в Оду сведений из этих документов.
+        Права группы Залоги / Руководитель позволяют импортировать лиды из файла
     """,
 
     "application": True,
@@ -27,7 +29,9 @@
     'data': [
         'security/deposit_access_rules.xml',
         'security/ir.model.access.csv',
-        'views/views.xml',
+        'views/deposit_tree_view.xml',
+        'views/deposit_form_view.xml',
+        'views/deposit_menu.xml',
         'views/templates.xml',
         #'views/resources.xml',
         'data/crm_stage_data.xml'

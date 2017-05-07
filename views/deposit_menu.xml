@@ -1,0 +1,73 @@
+<odoo>
+   <record model="ir.ui.view" id="crm_case_form_view_oppor">
+      <field name="name">crm_lead_wason form</field>
+      <field name="model">crm.lead</field>
+      <field name="inherit_id" ref="crm.crm_case_form_view_oppor"/>
+      <field name="arch" type="xml">
+        <xpath expr="//button[@name='action_set_won']" position="before">
+          <field name="id" invsible="1"/>
+            <button name="%(open_deposit_subject_page)d" string="Начать разговор" type="action" class="oe_highlight"
+            context="{'default_crm_lead_id': active_id}"/>
+
+        </xpath>
+
+        <xpath expr="//field[@name='phone']" position="after">
+           
+            <field name="id_deposit"/>
+        </xpath>
+
+      </field>
+    </record>
+
+
+    <record id="action_open_deposits" model="ir.actions.act_window">
+            <field name="name">Deposits</field>
+            <field name="res_model">deposit_subject_wason</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_type">form</field>
+    </record>
+
+    <record id="action_open_deposits-form" model="ir.actions.act_window">
+            <field name="name">Deposits</field>
+            <field name="res_model">deposit_subject_wason</field>
+            <field name="view_mode">form</field>
+            <field name="view_type">form</field>
+    </record>
+
+    <menuitem
+        id="menu_deposits_root"
+        name="Залоги"
+        sequence="1"
+        groups="group_deposit_user,group_deposit_manager"
+    />
+
+    <menuitem id="menu_deposits_actions_top"
+              name="Actions"
+              parent="menu_deposits_root"
+              sequence="10"
+              groups="group_deposit_user,group_deposit_manager"
+              />
+
+    <menuitem id="menu_deposits_resns_top"
+              name="Управление"
+              parent="menu_deposits_root"
+              sequence="100"
+              groups="group_deposit_manager"
+              />
+
+    <menuitem id="menu_deposits_actions"
+              name="Deposits"
+              parent="menu_deposits_actions_top"
+              action="action_open_deposits"
+              sequence="10"/>
+
+    <menuitem id="menu_deposits_actions-form"
+              name="Импорт из файла"
+              parent="menu_deposits_resns_top"
+              action="action_open_deposits-form"
+              sequence="100"/>
+
+
+
+
+</odoo>

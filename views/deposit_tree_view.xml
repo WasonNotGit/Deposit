@@ -1,0 +1,16 @@
+<odoo>
+  <record model="ir.ui.view" id="deposit_subject_wason_tree">
+      <field name="name">deposit_subject_wason dform2</field>
+      <field name="model">deposit_subject_wason</field>
+      <field name="arch" type="xml">
+        <tree>
+          <field name="contact_name" string="Имя контакта"/>
+          <field name="lead_phone" string="Номер телефона"/>
+          <field name="deposit_type" string="Объект"/>
+          <field name="deposit_object_address"/>
+        </tree>
+      </field>
+    </record>
+  
+</odoo>
+
