@@ -1,0 +1,25 @@
+<odoo>
+  <record model="ir.ui.view" id="deposit_subject_import_wason_form">
+    <field name="name">deposit_subject_wason dform3</field>
+    <field name="model">deposit_subject_import_wason</field>
+    <field name="arch" type="xml">
+      <form>
+       <header> 
+          <button name="do_toggle_done" type="object" 
+            string="Toggle Done" class="oe_highlight" /> 
+          <button name="do_clear_done" type="object" 
+            string="Clear All Done" /> 
+        </header> 
+        <sheet>
+          <group>
+            <field name="importing_leads"/>
+            <field name="processed_leads"/>
+            
+          </group>
+        </sheet>
+
+      </form>
+      </field>
+  </record>
+	
+</odoo>
