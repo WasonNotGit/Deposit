@@ -8,6 +8,8 @@
           <field name="lead_phone" string="Номер телефона"/>
           <field name="deposit_type" string="Объект"/>
           <field name="deposit_object_address"/>
+          <field name="state" string="Этап"/>
+
         </tree>
       </field>
     </record>

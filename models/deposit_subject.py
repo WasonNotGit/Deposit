@@ -181,6 +181,11 @@ def last_day_of_month(date):
         return date.replace(day=31)
     return date.replace(month=date.month+1, day=1) - datetime.timedelta(days=1)
 
+def return_if_set (tested_string, string_to_add = ""):
+    if tested_string:
+        return tested_string + string_to_add
+    return ""
+
 class deposit_subject(models.Model):
     _name = 'deposit_subject_wason'
   #  _order = "crm_lead, floor, "
@@ -211,26 +216,51 @@ class deposit_subject(models.Model):
                                required=True)
     stage_id = fields.Many2one(related='crm_lead_id.stage_id',
                                                  readonly=True)
+
+    state = fields.Selection( 
+        [('new','Новая'), ('first_contact','Первичный опрос'),
+        ('getting_docs','Получение документов')],'State')
+
     lead_email = fields.Char(related='crm_lead_id.email_from',readonly=False)
 
     contact_name = fields.Char(related='crm_lead_id.contact_name', string=u'Подскажите, как Вас зовут?',readonly=False)
     lead_phone = fields.Char(related='crm_lead_id.phone', readonly=False)
     # Поля займа
 
-    deposit_type = fields.Selection(DepositType.get_values(), string=u'Что у Вас за объект?', index=True, default=None, track_visibility='onchange')
+    deposit_type = fields.Selection(DepositType.get_values(), string=u'Что у Вас за объект?',
+        index=True,
+        default=None,
+        #states={'first_contact':[('required',True)], 'getting_docs':[('required',True)]},
+        track_visibility='onchange')
     loan_period_selection = fields.Selection ([(1,"1 месяц"),(2,"2 месяца"),(3,"3 месяца"),(4,"4 месяца"),(5,"5 месяцев"),(6,"6 месяцев"),(10,"10 месяцев"),
-        (12,"1 год"),(18,"полтора года"),(24,"2 года"),(36,"3 года"),(48,"4 года"),(60,"5 лет"),(120,"10 лет"),(1000,"другой срок")], string=u'На какой срок Вы хотите взять займ?', default=None, track_visibility='onchange')
-    loan_period_months = fields.Integer(string=u"На какой срок Вы хотите взять займ? (в месяцах)", default=0, track_visibility='onchange')
+        (12,"1 год"),(18,"полтора года"),(24,"2 года"),(36,"3 года"),(48,"4 года"),(60,"5 лет"),(120,"10 лет"),(1000,"другой срок")],
+        string=u'На какой срок Вы хотите взять займ?',
+        states={'new':[('invisible',True)]},
+        default=None, track_visibility='onchange')
+    loan_period_months = fields.Integer(string=u"На какой срок Вы хотите взять займ? (в месяцах)", default=0,
+        states={'new':[('invisible',True)]},
+        track_visibility='onchange')
     share = fields.Selection ([(1,"Целиком"),(2,"Доля")], string=u'Объект закладываете целиком или долю', default=None, track_visibility='onchange')
-    number_rooms = fields.Integer(string=u"Сколько комнат", track_visibility='onchange')
+    number_rooms = fields.Integer(string=u"Сколько комнат",
+        states={'new':[('invisible',True)],'first_contact':[('required',True)]},
+        track_visibility='onchange')
     square_meters = fields.Integer(string=u"Метраж?", track_visibility='onchange')
     square_acrs = fields.Integer(string=u"Сколько соток участок?", track_visibility='onchange')
     floor = fields.Integer(string=u"Этаж", track_visibility='onchange')
     land_status = fields.Selection(LandStatus.get_values(), string=u'По целевому назначению участка это земли: ', default=None, track_visibility='onchange')
-    deposit_object_address = fields.Char (string=u'Адрес объекта', track_visibility='onchange')
-    current_contact_to_owner = fields.Selection(CurrentContactRelationToOwner.get_values(), string=u'Вы собственник объекта?', index=False, default=None, track_visibility='onchange')
+    deposit_object_address = fields.Char (string=u'Адрес объекта',
+        states={'new':[('invisible',True)],'first_contact':[('required',True)]},
+        track_visibility='onchange')
+    current_contact_to_owner = fields.Selection(CurrentContactRelationToOwner.get_values(),
+        string=u'Вы собственник объекта?',
+        index=False,
+        default=None,
+        states={'first_contact':[('required',True)], 'getting_docs':[('required',True)]},
+        track_visibility='onchange')
     consanguinity = fields.Char (string=u'Укажите родство', default=None, track_visibility='onchange')
-    how_many_owners = fields.Selection(OneOrMany.get_values(), string=u'Сколько собственников у объекта: ', default=None, track_visibility='onchange')
+    how_many_owners = fields.Selection(OneOrMany.get_values(), string=u'Сколько собственников у объекта: ',
+        states={'new':[('invisible',True)],'first_contact':[('required',True)]},
+        default=None, track_visibility='onchange')
     other_owners_agree = fields.Selection (NullableBoolean.get_values(), string=u'Все остальные собственники тоже будут закладывать?', default=None, track_visibility='onchange')
     minors_owners = fields.Selection (NullableBoolean.get_values(), string=u'Есть ли среди собственников несовершеннолетние?', default=None, track_visibility='onchange')
     arested = fields.Selection (NullableBoolean.get_values(), string=u'Есть ли обременения на объекте (аресты, ипотека)?', default=None, track_visibility='onchange')
@@ -239,11 +269,17 @@ class deposit_subject(models.Model):
     marriage_contract = fields.Selection (NullableBoolean.get_values(), string=u'Имеется ли брачный договор?', required=False, default=None, track_visibility='onchange')
     reason_of_ownership = fields.Selection (ReasonOfOwnership.get_values(), string=u'Укажите, основание собственности: ', required=False, default=None, track_visibility='onchange')
     # Согласие супруги не требуется, т.к. объект приобретался по Договору дарения, приватизации или в наследство.
-    how_many_regestered = fields.Integer(string=u"Сколько человек зарегистрировано на объекте", default=-1, track_visibility='onchange')
+    how_many_regestered = fields.Integer(string=u"Сколько человек зарегистрировано на объекте",
+        states={'new':[('invisible',True)],'first_contact':[('required',True)]},
+        default=-1, track_visibility='onchange')
     minors_regestered = fields.Selection (NullableBoolean.get_values(), string=u'Есть ли среди зарегистрированных несовершеннолетние?', default=None, track_visibility='onchange')
     deposit_ownership_date = fields.Date(string=u'Дата возникновения права собственности', track_visibility='onchange')
-    required_loan_amount = fields.Integer(string=u"Какая сумма Вам нужна?", track_visibility='onchange')
-    loan_deadline = fields.Date(string=u"Не позднее какой даты Вам нужны деньги?", track_visibility='onchange')
+    required_loan_amount = fields.Integer(string=u"Какая сумма Вам нужна?",
+        states={'new':[('invisible',True)],'first_contact':[('required',True)]},
+        track_visibility='onchange')
+    loan_deadline = fields.Date(string=u"Не позднее какой даты Вам нужны деньги?",
+        states={'new':[('invisible',True)],'first_contact':[('required',True)]},
+        track_visibility='onchange')
     email_documents = fields.Selection (NullableBoolean.get_values(), string=u'Смогу отправить по электронной почте', required=False, default=None)
     deliver_documents = fields.Selection (NullableBoolean.get_values(), string=u'Смогу приехать в офис с документами', required=False, default=None)
     electricity_power = fields.Float(string=u"Сколько КВт электричества?", default=-1, track_visibility='onchange')
@@ -254,6 +290,13 @@ class deposit_subject(models.Model):
     house_materials = fields.Selection([(0,"Дерево"),(1,"Брус"),(2,"Газобетон"),(3,"Кирпич"),(4,"Каркасный (в том числе СИП-панели)"),(10,"Прочее")], string=u'Из каких материалов построен дом: ', default=None, track_visibility='onchange')
     basement_materials = fields.Selection([(0,"Бетонный"),(1,"Свайный"),(10,"Прочее")], string=u'Какой фундамент: ', default=None, track_visibility='onchange')
 
+    # Служебные (вычисляемые поля):
+    contact_fields_not_set = fields.Char (string="Не внесены ответы заёмщика на необходимые вопросы: ", 
+        compute="check_contact_fields",
+        #default = "",
+        store=True) # "Ответы заёмщика на все необходимые вопросы занесены"
+
+    current_state_description = fields.Html(string="Message", compute="write_state_description")
     message = fields.Text(string="Message", compute="write_message")
 
 
@@ -307,8 +350,52 @@ class deposit_subject(models.Model):
     #     else:
     #         self.message=u' '
 
+    @api.depends('deposit_type','required_loan_amount', 'loan_deadline', 'loan_period_selection', 'loan_period_months')
+    @api.multi
+    def check_contact_fields(self):
+        _logger.debug (u'self.deposit_type {} имеет тип: {})'.format(self.deposit_type, type (self.deposit_type)) )
+        lcontact_fields_not_set = ""
+        if not self.deposit_type:
+            lcontact_fields_not_set += u" Не указано, что за объект у заёмщика."
+        if (not self.loan_period_selection) or (self.loan_period_months>0):
+            lcontact_fields_not_set += u" Не указан срок, на который требуется займ."
+
+        self.contact_fields_not_set = lcontact_fields_not_set
+        # and (self.loan_period_selection is not None) and (self.loan_period_months>0)
+
+    @api.depends('state')
+    @api.multi
+    def write_state_description(self):
+        if self.state == 'new':
+            self.current_state_description = u'Попробуйте связаться с потенциальным заёмщиком по телефону {} ({})<br/>\
+                Когда он(а) ответит, нажмите на кнопку вверху "Разговариваю с человеком". Если человек уже прислал документы, \
+                то переходите к вводу данных из документов по кнопке "У меня документы"'.format(self.lead_phone,
+                self.contact_name)
+        elif self.state == 'first_contact':
+            self.current_state_description = u"<i>Следуйте скрипту звонка:</i><br/><br/>Здравствуйте, {} меня зовут {}.<br/> \
+                Я звоню по Вашей заявке на займ под залог. Мы можем предложить Вам займ по ставке ОТ ДВУХ ПРОЦЕНТОВ (!) в месяц.<br/> \
+                Деньги мы готовы выдать СРАЗУ после рассмотрения документов на объект.<br/> \
+                Если Ваша заявка еще актуальна, я бы хотел(а) узнать про объект, который Вы предлагаете в залог:".format(return_if_set (self.contact_name, ", "),
+                self.env.user.name)
+        # and (self.loan_period_selection is not None) and (self.loan_period_months>0)
+
+    # Кнопки
     @api.one
     def do_send_email(self):
         return  True
 
 
+    @api.one
+    def do_first_contact(self):
+        self.state = 'first_contact'
+        return False
+
+    @api.one
+    def do_getting_docs(self):
+        self.state = 'getting_docs'
+        return False
+
+    @api.one
+    def do_new(self):
+        self.state = 'new'
+        return False        

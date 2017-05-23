@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<odoo noupdate="1">
+<odoo noupdate="0">
     <record model="crm.stage" id="stage_lead_first_contact">
         <field name="name">Первичный опрос</field>
         <field name="probability">1</field>
@@ -10,7 +10,7 @@
         <field name="name">Получение документов</field>
         <field name="probability">3</field>
         <field name="on_change">1</field>
-        <field name="sequence">2</field>
+        <field name="sequence">11</field>
     </record>
     <record model="crm.stage" id="stage_lead3">
         <field name="name">Proposition</field>

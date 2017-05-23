@@ -11,8 +11,9 @@
             string="Clear All Done" /> 
         </header> 
         <sheet>
+          <field name="status_message"/>
+          <field name="importing_leads"/>
           <group>
-            <field name="importing_leads"/>
             <field name="processed_leads"/>
             
           </group>

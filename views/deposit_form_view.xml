@@ -3,47 +3,43 @@
       <field name="name">deposit_subject_wason dform</field>
       <field name="model">deposit_subject_wason</field>
       <field name="arch" type="xml">
-      <form create="false">
+      <form create="false" delete="false">
        <header> 
-          <button name="do_toggle_done" type="object" 
-            string="Toggle Done" class="oe_highlight" /> 
+          <button name="do_first_contact" type="object" 
+            attrs="{'invisible':[('state','in',['first_contact'])]}"
+            string="Разговариваю с человеком" class="oe_highlight oe_view_only" /> 
+
+          <button name="do_getting_docs" type="object" 
+            attrs="{'invisible':[('state','in',['getting_docs'])]}"
+            string="У меня документы" class="oe_highlight oe_view_only" /> 
+
           <button name="do_clear_done" type="object" 
             string="Clear All Done" /> 
         </header> 
         <sheet>
-           <group>
-
-              <p>Здравствуйте, <field name="contact_name" attrs="{'readonly':'true'}"/>, меня зовут Юлия.</p>
-              <span> <t t-esc="user.name"/> </span>
-
-              <span>3213213123</span>
-          </group>
-            <p>
-Я звоню по Вашей заявке на займ под залог. Мы можем предложить Вам займ по ставке ОТ ДВУХ ПРОЦЕНТОВ (!) в месяц. Деньги мы готовы выдать СРАЗУ после рассмотрения документов на объект.
-Если Ваша заявка еще актуальна, я бы хотела узнать про объект, который Вы предлагаете в залог.</p>
-            
-            <h3><field name="message"/></h3>
-           <!--  <h1 attrs="{'invisible':[  ('mydomain', '=', False)]}">Внимание! На самом деле человек хочет заложить только долю! Исправьте ниже ответ на вопрос: "Закладывается доля"</h1> and ( and ('how_many_owners'!=2)   other_owners_agree'-->
-           <h1 attrs="{'invisible': ['|','|',('share','!=',1),('how_many_owners','!=',2),('other_owners_agree','!=',2)]}">Внимание! На самом деле человек хочет заложить только долю! Исправьте ниже ответ на вопрос: "Объект закладываете целиком или долю"</h1>
-
-         <group>
+          <field name="current_state_description"/>
+          <h1 attrs="{'invisible': ['|','|',('share','!=',1),('how_many_owners','!=',2),('other_owners_agree','!=',2)]}">Внимание! На самом деле человек хочет заложить   только долю! Исправьте ниже ответ на вопрос: "Объект закладываете целиком или долю"</h1>
+          
+          <group>
 
             <field name="contact_name"/>
+            <field name="state"/>
+            <field name="contact_fields_not_set"/>
             <field name="crm_lead_id" attrs="{'readonly':'true', 'invisible':'true'}"/>
-            <field name="deposit_type" attrs="{'required':'true'}"/>
-            <field name="current_contact_to_owner" attrs="{'required':'true'}"/>
+            <field name="deposit_type" />
+            <field name="current_contact_to_owner"/>
             <field name="consanguinity" attrs="{'required':[('current_contact_to_owner', '==', 2)], 'invisible':[('current_contact_to_owner', '!=', 2)]}"/>
-            <field name="required_loan_amount" attrs="{'required':'true'}"/>
-            <field name="loan_period_selection" attrs="{'required':'true'}"/>
+            <field name="required_loan_amount"/>
+            <field name="loan_period_selection"/>
             <field name="loan_period_months" attrs="{'invisible':[('loan_period_selection', '!=', 1000)]}"/>
-            <field name="loan_deadline" attrs="{'required':'false'}"/>
-            <field name="share" attrs="{'required':'true'}"/>
+            <field name="loan_deadline"/>
+            <field name="share"/>
             <field name="number_rooms" attrs="{'invisible':[('deposit_type', '!=', 1)]}"/>
             <field name="square_meters" attrs="{'invisible':[('deposit_type', 'not in', (1, 2, 3, 6))], 'string': '123'}"/>
             <field name="square_acrs" attrs="{'invisible':[('deposit_type', 'not in', (3, 5))]}"/>
             <field name="floor" attrs="{'invisible':[('deposit_type', 'not in', (1, 2, 6))]}"/>
             <field name="land_status" attrs="{'invisible':[('deposit_type', 'not in', (3, 5))]}"/>
-            <field name="deposit_object_address" attrs="{'required':'true'}"/>
+            <field name="deposit_object_address"/>
             <field name="how_many_owners" attrs="{'required':[('current_contact_to_owner', '==', 1)]}"/>
             <field name="other_owners_agree" attrs="{'required':[('how_many_owners', '==', 2) , ('current_contact_to_owner', '==', 1)], 'invisible':[('how_many_owners', '!=', 2)]}"/>
             <field name="minors_owners" attrs="{'invisible':[('how_many_owners', '!=', 2)]}" />

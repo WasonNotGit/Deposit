@@ -1,4 +1,4 @@
-class _const:
+class _const:  # http://code.activestate.com/recipes/65207-constants-in-python/?in=user-97991
     class ConstError(TypeError): pass
     def __setattr__(self,name,value):
         if self.__dict__.has_key(name):
